@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - day2-web-app
+name: Build and deploy Python app to Azure Web App
 
 on:
   push:
@@ -6,52 +6,29 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
 
       - name: Run tests (optional)
         run: |
-          echo "No tests configured" || true
+          echo "No tests configured"
 
-      - name: Archive artifact
-        run: |
-          zip -r app.zip .
-
-      - name: Upload artifact for deploy job
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: app.zip
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-          path: .
-
-      - name: Unzip
-        run: unzip -o app.zip
-
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
         with:
-          app-name: day2-web-app
+          app-name: 'day2-web-app'                      # your App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .   # root folder (or zip file)
+          package: .
